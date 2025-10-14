@@ -1,0 +1,20 @@
+name: Set the `COMMIT_MESSAGE` environment variable with a commit message
+
+inputs:
+  SHA:
+    required: false
+    default: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v5
+      with:
+        ref: ${{ inputs.SHA }}
+    - shell: bash
+      run: |
+        set -eu
+        message=$(git log --format=%B -n 1 "${SHA}")
+        echo "COMMIT_MESSAGE=${message}" >> "${GITHUB_ENV}"
+      env:
+        SHA: ${{ inputs.SHA }}
